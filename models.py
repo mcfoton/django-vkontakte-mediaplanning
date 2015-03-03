@@ -2,20 +2,21 @@
 from django.db import models
 from vkontakte_groups.models import Group
 
-#model for Topic Sets. i.e. 'Sports'
+
 class GroupTopicSet(models.Model):
-    topicset = models.CharField(u'Группа тем', max_length=20)
+    name = models.CharField(u'Группа тем', max_length=20, help_text='Группа тем, например "Спорт", "Мода и стиль". Заполняется парсингом и в будущем дерево топиков будет пересмотрено.')
 
     def __unicode__(self):
-        return str(self.topicset)
+        #TODO разобраться почему консоль ругается на вывод <GroupTopicSet: [Bad Unicode data]>
+        return str(self.id).encode('utf-8') + str(self.name).encode('utf-8')
 
-#model for Topics inside Topic Set. i.e. 'Football', 'Baseball'
+
 class GroupTopic(models.Model):
-    topic = models.CharField(u'Тема', max_length=20)
-    grouptopicset = models.ForeignKey(GroupTopicSet)
+    name = models.CharField(u'Тема', max_length=20, help_text='Тема внутри группы тем. Например, "Футбол" и "Баскетбол" внутри группы тем "Спорт". Заполняется парсингом и в будущем дерево топиков будет пересмотрено.')
+    grouptopicset = models.ForeignKey(GroupTopicSet, null=True, help_text='Могут быть темы которые не принадлежат какому-то набору, сами по себе.')
 
     def __unicode__(self):
-        return str(self.t)
+        return str(self.id) + ' ' + str(self.name)
 
 
 #model for additional data from allsocial
@@ -23,15 +24,14 @@ class GroupAdditionalData(models.Model):
 
     vk_id = models.OneToOneField(Group, primary_key=True)
     date = models.DateTimeField(u'Дата парсинга')
-    
+
     grouptopics = models.ManyToManyField(GroupTopic, verbose_name='Тема')
     grouptopicsets = models.ManyToManyField(GroupTopicSet, verbose_name='Группа тем')
-    
-    in_search = models.BooleanField(u'В поиске')
-    cpp = models.IntegerField(u'Стоимость размещения поста')
 
-    #this field is updated only when group id is sent to ads API
-    audience_count = models.IntegerField(u'Аудитория c учетом фильтра')
+    in_search = models.BooleanField(u'В поиске', help_text='Находится ли это сообщество в поиске ВК по сообществам')
+    cpp = models.IntegerField(u'Стоимость размещения поста', help_text='Стоимость размещения одного поста в сообществе. Заполняется парсингом и по ходу работы обновляется пользователем вручную.')
+
+    audience_count = models.IntegerField(u'Аудитория c учетом фильтра', help_text='Число пользователей с учетом фильтров. Значение получается после запроса к рекламному кабинету с vk_id и других метрик в качестве фильтра.')
 
     def __unicode__(self):
         return str(self.vk_id)
