@@ -1,7 +1,32 @@
-from django.test import TestCase
-# from parser_a11sosial_json import parse_to_model
-from vkontakte_ads.models import Account, Campaign, Ad, TargetingStats
+# -*- coding: utf-8 -*-
 
+from django.test import TestCase
+from parser_a11social_json import fill_topic_models, parse_to_model
+from vkontakte_groups.models import Group
+# from vkontakte_ads.models import Account, Campaign, Ad, TargetingStats
+from vkontakte_mediaplanning.models import GroupAdditionalData, GroupTopicSet, GroupTopic
+
+class TestTopicParser(TestCase):
+
+    #TODO разобраться почему этот тест создает записи в боевых моделях вместо песочницы
+
+    def test_topic_parser(self):
+        self.assertEqual(GroupTopic.objects.count(), 0)
+        self.assertEqual(GroupTopicSet.objects.count(), 0)
+        fill_topic_models()
+        self.assertNotEqual(GroupTopic.objects.count(), 0)
+        self.assertNotEqual(GroupTopicSet.objects.count(), 0)
+        self.assertEqual(GroupTopic.objects.filter(grouptopicset=None).count(), 3)
+
+
+    def test_allsocial_parser(self):
+        self.assertEqual(GroupAdditionalData.objects.count(), 0)
+        parse_to_model()
+        self.assertEqual(GroupAdditionalData.objects.count(), 100)
+
+
+
+'''
 class TestUserCounts(TestCase):
     def test_user_counts(self):
         ids = [28764987]
@@ -16,7 +41,7 @@ class TestUserCounts(TestCase):
         campaign.fetch_ads()
         campaign.fetch_ads_targeting()
         self.assertEqual(Targeting.objects.count(), 1)
-        self.assertEqual(Targeting.objects.get().count, 641) 
+        self.assertEqual(Targeting.objects.get().count, 641)
 
     def get_user_counts(self):
         #prepare to work with ad account
@@ -40,7 +65,7 @@ class TestUserCounts(TestCase):
         print gids
 
 
-'''
+
 class TestGroupBasicData(TestCase):
     def test_basic_data(self):
         """

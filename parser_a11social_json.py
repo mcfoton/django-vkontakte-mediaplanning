@@ -52,17 +52,19 @@ def fill_topic_models():
 
     for key in topicsets.keys():
         if key[0] is not '-1': #topics outside of any topicset
-            _gts = GroupTopicSet.objects.create(id=key[0], topicset=key[1])
+            _gts = GroupTopicSet.objects.create(id=key[0], name=key[1])
             for topic in topicsets[key]:
-                _gts.grouptopic_set.create(id=topic, topic=topicsets[key][topic] , grouptopicset=key[0])
+                _gts.grouptopic_set.create(id=topic, name=topicsets[key][topic] , grouptopicset=key[0])
         else:
             for topic in topicsets[key]:
-                GroupTopic.objects.create(id=topic, topic=topicsets[key][topic])
-
+                GroupTopic.objects.create(id=topic, name=topicsets[key][topic])
 
 def parse_to_model():
+    """
+    Gets data from allsocial.ru
+    Prepares dictionaries and fills required models
+    """
 
-    #
     total_count = json.loads(requests.get('http://allsocial.ru/entity?direction=1&is_closed=-1&is_verified=-1&list_type=1&offset=204924&order_by=quantity&period=month&platform=1&range=0:8000000&type_id=-1').text)['response']['total_count']
     # total_pages = total_count / 25 + 1 #number of requests. one response carries 25 entries
 
@@ -72,7 +74,7 @@ def parse_to_model():
     #get all responses from allsocial
     for page in range(total_pages):
 
-        #print how many communities are parsed
+        #print how many communities are already parsed
         print '%s groups in db' % GroupAdditionalData.objects.count()
 
         #get response from the server and load data
@@ -95,34 +97,37 @@ def parse_to_model():
                     print "%s not in response keys" % i #That means something went wrong :(
                     return
 
-            #getting names for category ids
-            get_topic_name_by_id()
-
             #renaming response fields to match Group model
-            group['date'] = datetime.today()
             group['remote_id'] = group.pop('vk_id')
             group['members_count'] = group.pop('quantity')
-            group['photo_200'] = group.pop('avatar')
+            group['photo_big'] = group.pop('avatar')
             group['type'] = group.pop('type_id')
             group['name'] = group.pop('caption')
+            group['verified'] = group.pop('is_verified')
 
-            #renaming response fields to match Group Statistics model
-            reach = group.pop('reach')
-            visitors = group.pop('visitors')
             #creating dictionary to later decode to Group Statistics model
             statistics = {}
-            statistics['reach'] = reach
-            statistics['visitors'] = visitors
+            statistics['reach'] = group.pop('reach')
+            statistics['visitors'] = group.pop('visitors')
+            statistics['group'] = group['remote_id']
+            statistics['date'] = datetime.today()
 
             #creating dictionary to later decode to GroupAdditionalData model
             groupadditionaldata = {}
-            in_search = group.pop('in_search')
-            cpp = group.pop('cpp')
+            _topics = group.pop('category')
+            groupadditionaldata['vk_id'] = group['remote_id']
+            groupadditionaldata['date'] = datetime.today()
+            groupadditionaldata['in_search'] = group.pop('in_search')
+            groupadditionaldata['cpp'] = group.pop('cpp')
 
             #sending data sets to models
-            Group.objects.create(**group)
+            g = Group.objects.create(**group)
+            g.save()
+            statistics['group'] = g
             GroupStatistic.objects.create(**statistics)
-            GroupAdditionalData.objects.create(**group)
+            groupadditionaldata['vk_id'] = g
+            gad = GroupAdditionalData.objects.create(**groupadditionaldata)
+            gad.grouptopics = _topics.keys()
 
 fill_topic_models()
-
+parse_to_model()
