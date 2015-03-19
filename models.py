@@ -7,7 +7,7 @@ class GroupTopicSet(models.Model):
     name = models.CharField(u'Группа тем', max_length=20, help_text='Группа тем, например "Спорт", "Мода и стиль". Заполняется парсингом и в будущем дерево топиков будет пересмотрено.')
 
     def __unicode__(self):
-        #TODO разобраться почему консоль ругается на вывод <GroupTopicSet: [Bad Unicode data]>
+        #TODO разобраться почему консоль вместо красоты выдает <GroupTopicSet: [Bad Unicode data]>
         return str(self.id).encode('utf-8') + str(self.name).encode('utf-8')
 
 
@@ -26,12 +26,11 @@ class GroupAdditionalData(models.Model):
     date = models.DateTimeField(u'Дата парсинга')
 
     grouptopics = models.ManyToManyField(GroupTopic, verbose_name='Тема')
-    grouptopicsets = models.ManyToManyField(GroupTopicSet, verbose_name='Группа тем')
 
     in_search = models.BooleanField(u'В поиске', help_text='Находится ли это сообщество в поиске ВК по сообществам')
     cpp = models.IntegerField(u'Стоимость размещения поста', help_text='Стоимость размещения одного поста в сообществе. Заполняется парсингом и по ходу работы обновляется пользователем вручную.')
 
-    audience_count = models.IntegerField(u'Аудитория c учетом фильтра', help_text='Число пользователей с учетом фильтров. Значение получается после запроса к рекламному кабинету с vk_id и других метрик в качестве фильтра.')
+    audience_count = models.IntegerField(u'Аудитория c учетом фильтра', null=True, help_text='Число пользователей с учетом фильтров. Значение получается после запроса к рекламному кабинету с vk_id и других метрик в качестве фильтра.')
 
     def __unicode__(self):
         return str(self.vk_id)

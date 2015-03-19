@@ -114,20 +114,26 @@ def parse_to_model():
 
             #creating dictionary to later decode to GroupAdditionalData model
             groupadditionaldata = {}
-            _topics = group.pop('category')
             groupadditionaldata['vk_id'] = group['remote_id']
             groupadditionaldata['date'] = datetime.today()
             groupadditionaldata['in_search'] = group.pop('in_search')
             groupadditionaldata['cpp'] = group.pop('cpp')
 
+            #resolve topics ids to list
+            _t = group.pop('category')['public']
+            gt = []
+            for i in _t:
+                gt.append(int(i))
+
             #sending data sets to models
             g = Group.objects.create(**group)
             g.save()
+
             statistics['group'] = g
             GroupStatistic.objects.create(**statistics)
-            groupadditionaldata['vk_id'] = g
-            gad = GroupAdditionalData.objects.create(**groupadditionaldata)
-            gad.grouptopics = _topics.keys()
 
-fill_topic_models()
-parse_to_model()
+            groupadditionaldata['vk_id'] = g
+            grouptopics = GroupTopic.objects.filter(pk__in=gt)
+            gad = GroupAdditionalData.objects.create(**groupadditionaldata)
+            gad.grouptopics = grouptopics
+            gad.save()

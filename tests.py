@@ -18,11 +18,13 @@ class TestTopicParser(TestCase):
         self.assertNotEqual(GroupTopicSet.objects.count(), 0)
         self.assertEqual(GroupTopic.objects.filter(grouptopicset=None).count(), 3)
 
-
     def test_allsocial_parser(self):
         self.assertEqual(GroupAdditionalData.objects.count(), 0)
         parse_to_model()
         self.assertEqual(GroupAdditionalData.objects.count(), 100)
+        for i in GroupAdditionalData.objects.all():
+            if i.grouptopics.count() == 0: print i.pk
+            self.assertNotEqual(i.grouptopics.count(), 0)
 
 
 
@@ -63,23 +65,6 @@ class TestUserCounts(TestCase):
             gids[gid] = stat.audience_count
 
         print gids
-
-
-
-class TestGroupBasicData(TestCase):
-    def test_basic_data(self):
-        """
-        Tests if basic data is collected properly
-        """
-
-        self.assertEqual(GroupData.objects.count(), 0)
-
-        GroupData.remote.fetch(ids=[1, 3])
-        self.assertNotEqual(GroupData.objects.count(), 0)
-        self.assertEqual(GroupData.objects.get(pk=1).screen_name, 'apiclub')
-        self.assertGreater(GroupData.objects.get(pk=1).members_count, 0)
-        self.assertEqual(GroupData.objects.get(pk=3).screen_name, 'club3')
-        self.assertGreater(GroupData.objects.get(pk=3).members_count, 0)
 
 
 class TestAllSocialParsed(TestCase):
