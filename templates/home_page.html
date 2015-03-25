@@ -1,0 +1,12 @@
+{% load render_table from django_tables2 %}
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ STATIC_URL }}django_tables2/themes/paleblue/css/screen.css" />
+        <title>Список сообществ</title>
+    </head>
+    <body>
+        <h1>Список сообществ</h1>
+        {% render_table table %}
+    </body>
+</html>

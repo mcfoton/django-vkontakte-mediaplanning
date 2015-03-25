@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import unittest
@@ -17,9 +19,9 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get('http://localhost:8000')
 
         # He looks at the title
-        self.assertIn('groups', self.browser.title)
+        self.assertIn('сообществ', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
-        self.assertIn('groups', header_text)
+        self.assertIn('сообществ', header_text)
 
         # He looks at the table
         # He looks at all the buttons
