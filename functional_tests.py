@@ -4,10 +4,15 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import unittest
 
+browser = webdriver.Safari()
+browser.get('http://localhost:8000')
+self.assertIn('сообществ', self.browser.title)
+
+
 class NewVisitorTest(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Chrome()
+        self.browser = webdriver.Safari()
         self.browser.implicitly_wait(3)
 
     def tearDown(self):
@@ -68,5 +73,5 @@ class NewVisitorTest(unittest.TestCase):
         # All works and llama smiles
 '''
 
-if __name__ == '__main__':
-    unittest.main(warnings='ignore')
+#if __name__ == '__main__':
+#    unittest.main(warnings='ignore')

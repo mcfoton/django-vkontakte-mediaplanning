@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from django.test import TestCase
+from django.template.loader import render_to_string
+from django.core.urlresolvers import resolve
+from django.http import HttpRequest
+
 from parser_a11social_json import fill_topic_models, parse_to_model
 from vkontakte_groups.models import Group
-# from vkontakte_ads.models import Account, Campaign, Ad, TargetingStats
+from vkontakte_ads.models import Account, Campaign, Ad, TargetingStats
 from vkontakte_mediaplanning.models import GroupAdditionalData, GroupTopicSet, GroupTopic
 
+from vkontakte_mediaplanning.views import groups
+
+''' TODO: Uncomment
 class TestTopicParser(TestCase):
 
     def test_topic_parser(self):
@@ -24,71 +31,20 @@ class TestTopicParser(TestCase):
             if i.grouptopics.count() == 0: print i.pk
             self.assertNotEqual(i.grouptopics.count(), 0)
 
+
 class TestVkAdsAPIWithParameters(TestCase):
+    #TODO переписать тест для реальных значений
 
     def test_targeting_stats(self):
-
-        stat = TargetingStats.remote.get(ad=Ad(account=AccountFactory(remote_id=ACCOUNT_ID),
-                                               layout__link_domain='www.ford.com',
-                                               layout__link_url='http://www.ford.com/trucks/ranger/',
-                                               targeting__sex=2,
-                                               targeting__age_from=20,
-                                               targeting__age_to=30))
-
-        self.assertTrue(stat.audience_count > 0)
-        self.assertTrue(stat.recommended_cpc > 0)
-        self.assertTrue(stat.recommended_cpm > 0)
-
-
-from django.template.loader import render_to_string
-from django.core.urlresolvers import resolve
-from django.http import HttpRequest
-
-from vkontakte_mediaplanning.views import home_page
-
-class HomePageTest(TestCase):
-
-    def test_root_url_resolves_to_home_page_view(self):
-        found = resolve('/')
-        self.assertEqual(found.func, home_page)
-
-    def test_home_page_returns_correct_html(self):
-        request = HttpRequest()
-        response = home_page(request)
-        expected_html = render_to_string('home_page.html')
-        self.assertEqual(response.content.decode(), expected_html)
-'''
-    def test_ads_api_is_working(self):
-        Account.remote.fetch()
-        account = Account.objects.get(pk=1600459782)
-        account.fetch_campaigns()
-        campaign = Campaign.objects.get(pk=1000586044)
-
-
-
-class TestUserCounts(TestCase):
-    def test_user_counts(self):
-        ids = [28764987]
-        self.assertEqual(Account.objects.count(), 0)
-        self.assertEqual(Targeting.objects.count(), 0)
-        self.assertEqual(Ad.objects.count(), 0)
-        #TODO make smart selection from actual campaings and ads of the user
-        Account.remote.fetch()
-        account = Account.objects.get()
-        account.fetch_campaigns()
-        campaign = account.campaigns.get()
-        campaign.fetch_ads()
-        campaign.fetch_ads_targeting()
-        self.assertEqual(Targeting.objects.count(), 1)
-        self.assertEqual(Targeting.objects.get().count, 641)
-
-    def get_user_counts(self):
         #prepare to work with ad account
         Account.remote.fetch()
         account = Account.objects.get()
 
-        gids = {'1':None, '3':None} #TODO get gids from user selection in web table
-        filters = {'sex':1, 'age_from':20, 'age_to':30} #get user selected parameters
+        #TODO get gids from user selection in web table
+        gids = {'1':None, '3':None}
+
+        #get user selected parameters
+        filters = {'sex':1, 'age_from':20, 'age_to':30}
 
         for gid, v in gids:
             # get_user_count_for_gid(gid)
@@ -103,8 +59,17 @@ class TestUserCounts(TestCase):
 
         print gids
 
-
-class TestAllSocialParsed(TestCase):
-    def test_parsing_to_db(self):
-        parse_to_model()
 '''
+
+class HomePageTest(TestCase):
+
+    def test_root_url_resolves_to_home_page_view(self):
+        found = resolve('/seeding/')
+        self.assertEqual(found.func, groups)
+
+    def test_home_page_returns_correct_html(self):
+        request = HttpRequest()
+        response = groups(request)
+        expected_html = render_to_string('home_page.html')
+        self.assertEqual(response.content.decode(), expected_html)
+
